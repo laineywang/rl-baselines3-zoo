@@ -164,10 +164,12 @@ MinitaurBulletDuckEnv-v0:
 # To be tuned
 CarRacing-v0:
   env_wrapper:
+    - utils.wrappers.RacingWrapper:
+        speed_limit: 40
     - gym.wrappers.resize_observation.ResizeObservation:
         shape: 64
-    - gym.wrappers.gray_scale_observation.GrayScaleObservation:
-        keep_dim: true
+    # - gym.wrappers.gray_scale_observation.GrayScaleObservation:
+    #     keep_dim: true
   frame_stack: 4
   n_envs: 1
   n_timesteps: !!float 1e6

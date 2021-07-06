@@ -3,6 +3,181 @@ import numpy as np
 from sb3_contrib.common.wrappers import TimeFeatureWrapper  # noqa: F401 (backward compatibility)
 from scipy.signal import iirfilter, sosfilt, zpk2sos
 
+from pyglet import gl
+import gym
+import cv2
+import numpy as np
+from math import ceil
+import pyglet
+import scipy.stats
+pyglet.options["debug_gl"] = False
+
+SCALE = 6.0  # Track scale
+PLAYFIELD = 2000 / SCALE  # Game over boundary
+FPS = 50  # Frames per second
+STANDARD_DEV = 5.0
+
+
+class RacingWrapper(gym.Wrapper):
+    '''
+        CarRacing environment modifications
+        Run 'env = RacingWrapper(env)' on existing gym environment to activate
+    '''
+
+    def __init__(self, env, speed_limit):
+        super(RacingWrapper, self).__init__(env)
+        # Replace indicators with speedometer
+        self.unwrapped.render_indicators = self.render_speedometer
+        self.unwrapped.step = self.new_step
+        # self.unwrapped.observation_space.shape = (
+        #     48, 48, 3)  # Downsampled state space size
+        self.speed_limit = speed_limit
+
+    def step(self, action):
+        ''' Propagate wrapped environment given action '''
+        # state, reward, done, info = self.env.step(action)
+        state, reward, done, info = self.unwrapped.step(action)
+        # Downsample state space for faster NN training
+        # self.state = self.downsample(state)
+        self.state = self.state / 255.  # Image normalization
+        return self.state, reward, done, info
+
+    def observation(self, obs):
+        return obs / 255.
+        # return self.downsample(obs) / 255.
+
+    def reset(self):
+        obs = self.unwrapped.reset()
+        return obs / 255.
+        # return self.downsample(obs) / 255.
+
+    def downsample(self, img):
+        ''' Use Gaussian blur to downsample state space (does not effect rendered image) '''
+        # Get dimensions
+        m = img.shape[0]
+        n = img.shape[1]
+        c = img.shape[2]
+
+        # Construct downscaled image
+        blurred_img = cv2.GaussianBlur(img, ksize=(5, 5), sigmaX=.7)
+        row_range = int(ceil(m/2.))
+        col_range = int(ceil(n/2.))
+        downscaled_img = np.zeros((row_range, col_range, c))
+        for i in range(row_range):
+            for j in range(col_range):
+                downscaled_img[i, j, :] = blurred_img[2*i, 2*j, :]
+        return downscaled_img.astype('int32')
+
+    def new_step(self, action):
+        if action is not None:
+            self.car.steer(-action[0])
+            self.car.gas(action[1])
+            self.car.brake(action[2])
+
+        self.car.step(1.0 / FPS)
+        self.world.Step(1.0 / FPS, 6 * 30, 2 * 30)
+        self.t += 1.0 / FPS
+
+        self.state = self.render("state_pixels")
+
+        step_reward = 0
+        done = False
+        if action is not None:  # First step without action, called from reset()
+            self.reward -= 0.1
+            # We actually don't want to count fuel spent, we want car to be faster.
+            # self.reward -=  10 * self.car.fuel_spent / ENGINE_POWER
+
+            # everything within 1 sd (5 mph) gives 0-positive reward. everything beyond that gives negative reward
+            true_speed = np.sqrt(
+                np.square(self.car.hull.linearVelocity[0])
+                + np.square(self.car.hull.linearVelocity[1])
+            )
+            # print('truespeed', true_speed)
+            self.reward += (scipy.stats.norm(
+                self.speed_limit, STANDARD_DEV).pdf(true_speed) * 100 - 4.839414490382867) / 10
+            # print('pie', (scipy.stats.norm(self.speed_limit, STANDARD_DEV).pdf(
+            #     true_speed) * 100 - 4.839414490382867) / 10)
+
+            self.car.fuel_spent = 0.0
+            step_reward = self.reward - self.prev_reward
+            self.prev_reward = self.reward
+            if self.tile_visited_count == len(self.track):
+                done = True
+            x, y = self.car.hull.position
+            if abs(x) > PLAYFIELD or abs(y) > PLAYFIELD:
+                done = True
+                step_reward = -100
+
+        return self.state, step_reward, done, {}
+
+    def render_speedometer(self, W, H):
+        ''' Render a speedometer at the bottom of the screen instead of indicators '''
+        s = W / 40.0
+        h = H / 40.0
+        colors = [0, 0, 0, 1] * 4
+        polygons = [W, 0, 0, W, 5 * h, 0, 0, 5 * h, 0, 0, 0, 0]
+
+        def vertical_ind(place, val, color):
+            colors.extend([color[0], color[1], color[2], 1] * 4)
+            polygons.extend(
+                [
+                    place * s,
+                    h + h * val,
+                    0,
+                    (place + 1) * s,
+                    h + h * val,
+                    0,
+                    (place + 1) * s,
+                    h,
+                    0,
+                    (place + 0) * s,
+                    h,
+                    0,
+                ]
+            )
+
+        def horiz_ind(place, val, color):
+            colors.extend([color[0], color[1], color[2], 1] * 4)
+            polygons.extend(
+                [
+                    (place + 0) * s,
+                    4 * h,
+                    0,
+                    (place + val) * s,
+                    4 * h,
+                    0,
+                    (place + val) * s,
+                    2 * h,
+                    0,
+                    (place + 0) * s,
+                    2 * h,
+                    0,
+                ]
+            )
+
+        true_speed = np.sqrt(
+            np.square(self.car.hull.linearVelocity[0])
+            + np.square(self.car.hull.linearVelocity[1])
+        )
+
+        # ARMLAB MOD: alternative speedometer
+        speed_limit = self.speed_limit
+        spedometer_pos = 10
+        spedometer_len = 0.32 * true_speed
+        spedometer_color = (0, 1, 0)
+        if spedometer_len >= .9*(speed_limit - spedometer_pos):
+            spedometer_color = (1, .5, 0)
+        if spedometer_len >= (speed_limit - spedometer_pos):
+            spedometer_color = (1, 0, 0)
+        horiz_ind(spedometer_pos, spedometer_len, spedometer_color)
+        horiz_ind(speed_limit, .2, (1, 1, 1))
+
+        vl = pyglet.graphics.vertex_list(
+            len(polygons) // 3, ("v3f", polygons), ("c4f", colors)  # gl.GL_QUADS,
+        )
+        vl.draw(gl.GL_QUADS)
+        self.score_label.text = "%04i" % self.reward
+        self.score_label.draw()
 
 class DoneOnSuccessWrapper(gym.Wrapper):
     """

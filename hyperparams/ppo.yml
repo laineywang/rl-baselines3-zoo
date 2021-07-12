@@ -2,7 +2,7 @@ atari:
   env_wrapper:
     - stable_baselines3.common.atari_wrappers.AtariWrapper
   frame_stack: 4
-  policy: 'CnnPolicy'
+  policy: "CnnPolicy"
   n_envs: 8
   n_steps: 128
   n_epochs: 4
@@ -16,7 +16,7 @@ atari:
 Pendulum-v0:
   n_envs: 8
   n_timesteps: !!float 2e6
-  policy: 'MlpPolicy'
+  policy: "MlpPolicy"
   n_steps: 2048
   batch_size: 64
   gae_lambda: 0.95
@@ -30,7 +30,7 @@ Pendulum-v0:
 CartPole-v1:
   n_envs: 8
   n_timesteps: !!float 1e5
-  policy: 'MlpPolicy'
+  policy: "MlpPolicy"
   n_steps: 32
   batch_size: 256
   gae_lambda: 0.8
@@ -44,7 +44,7 @@ MountainCar-v0:
   normalize: true
   n_envs: 16
   n_timesteps: !!float 1e6
-  policy: 'MlpPolicy'
+  policy: "MlpPolicy"
   n_steps: 16
   gae_lambda: 0.98
   gamma: 0.99
@@ -56,7 +56,7 @@ MountainCarContinuous-v0:
   normalize: true
   n_envs: 1
   n_timesteps: !!float 20000
-  policy: 'MlpPolicy'
+  policy: "MlpPolicy"
   batch_size: 256
   n_steps: 8
   gamma: 0.9999
@@ -74,7 +74,7 @@ Acrobot-v1:
   normalize: true
   n_envs: 16
   n_timesteps: !!float 1e6
-  policy: 'MlpPolicy'
+  policy: "MlpPolicy"
   n_steps: 256
   gae_lambda: 0.94
   gamma: 0.99
@@ -85,7 +85,7 @@ BipedalWalker-v3:
   normalize: true
   n_envs: 16
   n_timesteps: !!float 5e6
-  policy: 'MlpPolicy'
+  policy: "MlpPolicy"
   n_steps: 2048
   batch_size: 64
   gae_lambda: 0.95
@@ -99,7 +99,7 @@ BipedalWalkerHardcore-v3:
   normalize: true
   n_envs: 16
   n_timesteps: !!float 10e7
-  policy: 'MlpPolicy'
+  policy: "MlpPolicy"
   n_steps: 2048
   batch_size: 64
   gae_lambda: 0.95
@@ -112,7 +112,7 @@ BipedalWalkerHardcore-v3:
 LunarLander-v2:
   n_envs: 16
   n_timesteps: !!float 1e6
-  policy: 'MlpPolicy'
+  policy: "MlpPolicy"
   n_steps: 1024
   batch_size: 64
   gae_lambda: 0.98
@@ -123,7 +123,7 @@ LunarLander-v2:
 LunarLanderContinuous-v2:
   n_envs: 16
   n_timesteps: !!float 1e6
-  policy: 'MlpPolicy'
+  policy: "MlpPolicy"
   n_steps: 1024
   batch_size: 64
   gae_lambda: 0.98
@@ -137,7 +137,7 @@ HalfCheetahBulletEnv-v0: &pybullet-defaults
   normalize: true
   n_envs: 16
   n_timesteps: !!float 2e6
-  policy: 'MlpPolicy'
+  policy: "MlpPolicy"
   batch_size: 128
   n_steps: 512
   gamma: 0.99
@@ -151,10 +151,10 @@ HalfCheetahBulletEnv-v0: &pybullet-defaults
   use_sde: True
   clip_range: 0.4
   policy_kwargs: "dict(log_std_init=-2,
-                       ortho_init=False,
-                       activation_fn=nn.ReLU,
-                       net_arch=[dict(pi=[256, 256], vf=[256, 256])]
-                       )"
+    ortho_init=False,
+    activation_fn=nn.ReLU,
+    net_arch=[dict(pi=[256, 256], vf=[256, 256])]
+    )"
 
 # Tuned
 AntBulletEnv-v0:
@@ -162,10 +162,10 @@ AntBulletEnv-v0:
   env_wrapper: sb3_contrib.common.wrappers.TimeFeatureWrapper
   learning_rate: !!float 3e-5
   policy_kwargs: "dict(log_std_init=-1,
-                       ortho_init=False,
-                       activation_fn=nn.ReLU,
-                       net_arch=[dict(pi=[256, 256], vf=[256, 256])]
-                       )"
+    ortho_init=False,
+    activation_fn=nn.ReLU,
+    net_arch=[dict(pi=[256, 256], vf=[256, 256])]
+    )"
 
 # Tuned
 Walker2DBulletEnv-v0:
@@ -173,10 +173,10 @@ Walker2DBulletEnv-v0:
   learning_rate: !!float 3e-5
   clip_range: lin_0.4
   policy_kwargs: "dict(log_std_init=-2,
-                       ortho_init=False,
-                       activation_fn=nn.ReLU,
-                       net_arch=[dict(pi=[256, 256], vf=[256, 256])]
-                       )"
+    ortho_init=False,
+    activation_fn=nn.ReLU,
+    net_arch=[dict(pi=[256, 256], vf=[256, 256])]
+    )"
 
 # Tuned
 HopperBulletEnv-v0:
@@ -184,10 +184,10 @@ HopperBulletEnv-v0:
   learning_rate: !!float 3e-5
   clip_range: lin_0.4
   policy_kwargs: "dict(log_std_init=-2,
-                       ortho_init=False,
-                       activation_fn=nn.ReLU,
-                       net_arch=[dict(pi=[256, 256], vf=[256, 256])]
-                       )"
+    ortho_init=False,
+    activation_fn=nn.ReLU,
+    net_arch=[dict(pi=[256, 256], vf=[256, 256])]
+    )"
 
 # Tuned
 ReacherBulletEnv-v0:
@@ -195,7 +195,7 @@ ReacherBulletEnv-v0:
   normalize: true
   n_envs: 8
   n_timesteps: !!float 1e6
-  policy: 'MlpPolicy'
+  policy: "MlpPolicy"
   batch_size: 64
   n_steps: 512
   gamma: 0.99
@@ -209,16 +209,16 @@ ReacherBulletEnv-v0:
   use_sde: True
   clip_range: lin_0.4
   policy_kwargs: "dict(log_std_init=-2.7,
-                       ortho_init=False,
-                       activation_fn=nn.ReLU,
-                       net_arch=[dict(pi=[256, 256], vf=[256, 256])]
-                       )"
+    ortho_init=False,
+    activation_fn=nn.ReLU,
+    net_arch=[dict(pi=[256, 256], vf=[256, 256])]
+    )"
 
 MinitaurBulletEnv-v0:
   normalize: true
   n_envs: 8
   n_timesteps: !!float 2e6
-  policy: 'MlpPolicy'
+  policy: "MlpPolicy"
   n_steps: 2048
   batch_size: 64
   gae_lambda: 0.95
@@ -232,7 +232,7 @@ MinitaurBulletDuckEnv-v0:
   normalize: true
   n_envs: 8
   n_timesteps: !!float 2e6
-  policy: 'MlpPolicy'
+  policy: "MlpPolicy"
   n_steps: 2048
   batch_size: 64
   gae_lambda: 0.95
@@ -247,7 +247,7 @@ HumanoidBulletEnv-v0:
   normalize: true
   n_envs: 8
   n_timesteps: !!float 1e7
-  policy: 'MlpPolicy'
+  policy: "MlpPolicy"
   n_steps: 2048
   batch_size: 64
   gae_lambda: 0.95
@@ -261,7 +261,7 @@ InvertedDoublePendulumBulletEnv-v0:
   normalize: true
   n_envs: 8
   n_timesteps: !!float 2e6
-  policy: 'MlpPolicy'
+  policy: "MlpPolicy"
   n_steps: 2048
   batch_size: 64
   gae_lambda: 0.95
@@ -275,7 +275,7 @@ InvertedPendulumSwingupBulletEnv-v0:
   normalize: true
   n_envs: 8
   n_timesteps: !!float 2e6
-  policy: 'MlpPolicy'
+  policy: "MlpPolicy"
   n_steps: 2048
   batch_size: 64
   gae_lambda: 0.95
@@ -308,7 +308,7 @@ MiniGrid-FourRooms-v0:
   normalize: true
   n_envs: 8
   n_timesteps: !!float 4e6
-  policy: 'MlpPolicy'
+  policy: "MlpPolicy"
   n_steps: 512
   batch_size: 64
   gae_lambda: 0.95
@@ -320,6 +320,8 @@ MiniGrid-FourRooms-v0:
 
 CarRacing-v0:
   env_wrapper:
+    - utils.wrappers.RacingWrapper:
+        speed_limit: 40
     - gym.wrappers.resize_observation.ResizeObservation:
         shape: 64
     - gym.wrappers.gray_scale_observation.GrayScaleObservation:
@@ -327,7 +329,7 @@ CarRacing-v0:
   frame_stack: 4
   n_envs: 8
   n_timesteps: !!float 1e6
-  policy: 'CnnPolicy'
+  policy: "CnnPolicy"
   batch_size: 128
   n_steps: 512
   gamma: 0.99
@@ -341,5 +343,5 @@ CarRacing-v0:
   use_sde: True
   clip_range: 0.4
   policy_kwargs: "dict(log_std_init=-2,
-                       ortho_init=False,
-                       )"
+    ortho_init=False,
+    )"

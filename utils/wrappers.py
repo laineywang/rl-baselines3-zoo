@@ -29,6 +29,7 @@ class RacingWrapper(gym.Wrapper):
         # Replace indicators with speedometer
         self.unwrapped.render_indicators = self.render_speedometer
         self.unwrapped.step = self.new_step
+        self.unwrapped.render_road = self.render_road
         # self.unwrapped.observation_space.shape = (
         #     48, 48, 3)  # Downsampled state space size
         self.speed_limit = speed_limit
@@ -39,16 +40,16 @@ class RacingWrapper(gym.Wrapper):
         state, reward, done, info = self.unwrapped.step(action)
         # Downsample state space for faster NN training
         # self.state = self.downsample(state)
-        self.state = self.state / 255.  # Image normalization
+        # self.state = self.state / 255.  # Image normalization
         return self.state, reward, done, info
 
-    def observation(self, obs):
-        return obs / 255.
-        # return self.downsample(obs) / 255.
+    # def observation(self, obs):
+    #     return obs / 255.
+    #     # return self.downsample(obs) / 255.
 
-    def reset(self):
-        obs = self.unwrapped.reset()
-        return obs / 255.
+    # def reset(self):
+    #     obs = self.unwrapped.reset()
+    #     return obs / 255.
         # return self.downsample(obs) / 255.
 
     def downsample(self, img):
@@ -179,6 +180,52 @@ class RacingWrapper(gym.Wrapper):
         vl.delete()
         self.score_label.text = "%04i" % self.reward
         self.score_label.draw()
+
+    def render_road(self):
+        colors = [0.4, 0.8, 0.4, 1.0] * 4
+        polygons_ = [
+            +PLAYFIELD,
+            +PLAYFIELD,
+            0,
+            +PLAYFIELD,
+            -PLAYFIELD,
+            0,
+            -PLAYFIELD,
+            -PLAYFIELD,
+            0,
+            -PLAYFIELD,
+            +PLAYFIELD,
+            0,
+        ]
+        k = PLAYFIELD / 20.0
+        colors.extend([0.4, 0.9, 0.4, 1.0] * 4 * 20 * 20)
+        for x in range(-20, 20, 2):
+            for y in range(-20, 20, 2):
+                polygons_.extend(
+                    [
+                        k * x + k,
+                        k * y + 0,
+                        0,
+                        k * x + 0,
+                        k * y + 0,
+                        0,
+                        k * x + 0,
+                        k * y + k,
+                        0,
+                        k * x + k,
+                        k * y + k,
+                        0,
+                    ]
+                )
+        for poly, color in self.road_poly:
+            colors.extend([color[0], color[1], color[2], 1] * len(poly))
+            for p in poly:
+                polygons_.extend([p[0], p[1], 0])
+        vl = pyglet.graphics.vertex_list(
+            len(polygons_) // 3, ("v3f", polygons_), ("c4f", colors)  # gl.GL_QUADS,
+        )
+        vl.draw(gl.GL_QUADS)
+        vl.delete()
 
 class DoneOnSuccessWrapper(gym.Wrapper):
     """
